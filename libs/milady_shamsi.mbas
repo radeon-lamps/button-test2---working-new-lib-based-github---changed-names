@@ -1,0 +1,349 @@
+module milady_shamsi
+include "libs/LCD"  ' Include both used modules
+
+
+dim hours, minutes, seconds, day, week, month, year as byte external   ' Global date/time variables
+
+ '################### Shamsi to Mlady #####################
+   dim miladiYear as integer
+   dim miladiDate_iMonth,miladiDate_iYear,miladiDate_iDay as integer
+ '################### Shamsi #####################
+' dim uart_rd,counter,error_,receive,error,error1,data1 ,error2_,clk as byte
+'dim cnt,hour1 as integer          ' Global variable cnt
+Dim N2, Conter2 As Byte
+Dim Year2 As Word
+Dim Sec1 As Byte
+Dim Jmonth_a As Byte[12]
+Dim Gmonth_a As Byte[12]
+Dim Gyear As Integer                                        'input gregorian(miladi) year
+Dim Gday As Integer                                         'input gregorian day
+Dim Gmonth As Integer
+Dim Jday As Integer                                         'Output jalali(shamsi) day
+Dim Jmonth As Integer                                       'Output Jalali month
+Dim Jyear As Integer
+Dim Gdayofyear As Integer
+Dim Gyear_ As Integer                                       'Output Jalali year
+Dim Jdayofyear As Integer
+Dim Gnumdayofyear As Integer
+Dim Isleapyear As Bit
+Dim Isleapyearp As Bit
+Dim Iloop As Byte
+Dim Temp1 As Integer
+Dim Temp2 As Integer                                        '***************** set hiter***** led *********
+Dim Temp3 As Integer
+Dim Temp4 As Integer
+
+dim txt as string[19]   external
+
+
+'sub procedure Lcd_0()    external
+
+sub procedure Shamsi_call()
+sub procedure Shamsi_show_lcd(dim jjmonth,jjday,jjyear,jweek,jhours ,jminutes,jseconds as integer)
+sub procedure miladi_call(dim jjmonth,jjday,jjyear,jweek,jhours ,jminutes,jseconds as integer)
+sub procedure Shamsi_transfer_time()
+implements
+ '**************************************************************************************************
+'* Shamsi_transfer_time
+'**************************************************************************************************}
+ '-------------------- Formats date and time
+sub procedure Shamsi_transfer_time()
+
+   seconds  =  ((seconds and 0x70) >> 4)*10 + (seconds and 0x0F)
+  minutes  =  ((minutes and 0xF0) >> 4)*10 + (minutes and 0x0F)
+  hours    =  ((hours and 0x30) >> 4)*10 + (hours and 0x0F)
+  week     =  (week and 0x07)
+  day      =  ((day and 0xF0) >> 4)*10 + (day and 0x0F)
+  month    =  ((month and 0x10) >> 4)*10 + (month and 0x0F)
+  year     =  ((year and 0xF0) >> 4)*10+(year and 0x0F)
+end sub
+
+sub procedure Shamsi_show_lcd(dim jjmonth,jjday,jjyear,jweek,jhours ,jminutes,jseconds as integer)
+  select case jweek
+     case 2
+      txt = "Sun"
+     case 3
+      txt = "Mon"
+     case 4
+      txt = "Tue"
+     case 5
+      txt = "Wed"
+     case 6
+      txt = "Thu"
+     case 7
+      txt = "Fri"
+     case 1
+      txt = "Sat"
+  end select
+
+  LCD_Out(1,1, txt)
+  Lcd_Chr(1, 6, (jjday div 10)   + 48)    ' Print tens digit of day variable
+  Lcd_Chr(1, 7, (jjday mod 10)   + 48)    ' Print oness digit of day variable
+  Lcd_Chr(1, 9, (jjmonth div 10) + 48)
+  Lcd_Chr(1,10, (jjmonth mod 10) + 48)
+'  Lcd_Chr(1,14, txt)
+  Lcd_Chr(1,12, (jjyear div 1000)  + 48)
+  Lcd_Chr(1,13, ((jjyear mod 1000)div 100)  + 48)
+  Lcd_Chr(1,14, (((jjyear mod 1000)mod 100) div 10)  + 48)
+  Lcd_Chr(1,15, (((jjyear mod 1000)mod 100) mod 10)  + 48)
+
+  Lcd_Chr(2, 6, (jhours div 10)   + 48)
+  Lcd_Chr(2, 7, (jhours mod 10)   + 48)
+  Lcd_Chr(2, 9, (jminutes div 10) + 48)
+  Lcd_Chr(2,10, (jminutes mod 10) + 48)
+  Lcd_Chr(2,12, (jseconds div 10) + 48)
+  Lcd_Chr(2,13, (jseconds mod 10) + 48)
+
+end sub
+    '* ???????? ?????? ?? ????
+'* input : variables with RTC data
+'**************************************************************************************************}
+sub procedure shamsi_to_milady(dim ShamsiMonth, ShamsiDay, ShamsiYear as integer)
+' Declare a constant array which holds number of days in each month:
+'const Gmonth_a as byte[12] = (31,28,31,30,31,30,31,31,30,31,30,31)
+dim miladiYear2,miladiYear,marchDayDiff,Temp5, remainDay as integer
+dim farvardin1st_iMonth,farvardin1st_iDay,dayCount,i as integer
+'dim miladiDate_iMonth,miladiDate_iDay,miladiDate_iYear  as integer
+Dim Mmonth_a As Byte[12]
+structure farvardin1st_2
+  dim iMonth,iDay as integer
+end structure
+'const Mmonth_a as byte[12]   =  (30,31,30,31,31,30,31,30,31,31,28,31)
+       Mmonth_a[0] = 30
+       Mmonth_a[1] = 31
+       Mmonth_a[2] = 30
+       Mmonth_a[3] = 31
+       Mmonth_a[4] = 31
+       Mmonth_a[5] = 30
+       Mmonth_a[6] = 31
+       Mmonth_a[7] = 30
+       Mmonth_a[8] = 31
+       Mmonth_a[9] = 31
+       Mmonth_a[10] = 28
+       Mmonth_a[11] = 31
+
+      miladiYear = ShamsiYear + 621
+      miladiYear2=miladiYear
+      Temp1 = miladiYear2 Mod 4
+      Temp2 = miladiYear2 Mod 100
+      Temp3 = miladiYear2 Mod 400
+      Temp4 = (( Temp2 <> 0) and ( Temp1 = 0) )
+      Temp5=((Temp2 = 0) and (Temp3 = 0) )
+'      if(((((miladiYear mod  100)<> 0) and ((miladiYear mod 4) = 0))) or ((((miladiYear mod 100)= 0) and (miladiYear mod 400) = 0))) then
+      if(Temp4 or temp5) then
+
+'      If (Temp4 <> 0 ) or Temp3 = 0    Then
+        farvardin1st_iMonth = 3
+        farvardin1st_iDay = 20
+        marchDayDiff = 12
+      Else
+         farvardin1st_iMonth = 3
+         farvardin1st_iDay =21
+         marchDayDiff = 11
+      End If
+      if(((((miladiYear+1 mod  100)<> 0) and ((miladiYear+1 mod 4) = 0))) or ((((miladiYear+1 mod 100)= 0) and (miladiYear+1 mod 400) = 0))) then
+
+         Mmonth_a[10] = Mmonth_a[10] + 1 '//Adding one day to Feb
+       end if
+
+       if((ShamsiMonth>=1)and( ShamsiMonth<=6))   then
+           dayCount = ((ShamsiMonth-1) * 31) + ShamsiDay
+       else
+           dayCount =(6 * 31) + ((ShamsiMonth - 7) * 30) + ShamsiDay
+       end if
+       if (dayCount <= marchDayDiff) then '//So we are in 20(for leap year) or 21for none leap year) to 31 march
+
+          miladiDate_iDay = dayCount + (31 - marchDayDiff)
+          miladiDate_iMonth = 3
+          miladiDate_iYear=miladiYear
+
+      else
+          remainDay = dayCount - marchDayDiff
+      end if
+       i = 0  ' //starting from April
+
+       while ((remainDay > Mmonth_a[i]))
+
+             remainDay = remainDay - Mmonth_a[i]
+             i=i+1
+
+       wend
+      miladiDate_iDay = remainDay
+
+      if (i > 8)  then '// We are in the next Miladi Year
+
+         miladiDate_iMonth = i - 8
+         miladiDate_iYear =  miladiYear + 1
+
+     else
+
+         miladiDate_iMonth = i + 4
+         miladiDate_iYear =  miladiYear
+     end if
+
+
+end sub
+   '* ???????? ?????? ?? ????
+'* input : variables with RTC data
+'**************************************************************************************************}
+sub procedure shamsi()
+' Declare a constant array which holds number of days in each month:
+'const Gmonth_a as byte[12] = (31,28,31,30,31,30,31,31,30,31,30,31)
+
+  Gmonth_a[0] = 31
+  Gmonth_a[1] = 28
+  Gmonth_a[2] = 31
+  Gmonth_a[3] = 30
+  Gmonth_a[4] = 31
+  Gmonth_a[5] = 30
+  Gmonth_a[6] = 31
+  Gmonth_a[7] = 31
+  Gmonth_a[8] = 30
+  Gmonth_a[9] = 31
+  Gmonth_a[10] = 30
+  Gmonth_a[11] = 31
+  Gnumdayofyear = 365
+  Gdayofyear = 0
+  Temp1 = Gyear Mod 4
+  Temp2 = Gyear Mod 100
+  Temp3 = Gyear Mod 400
+  Temp4 = Temp1 And Temp2
+  If (Temp4 <> 0) Or (Temp3 = 0) Then
+'  If (Temp4 = 0 ) and (Temp3 <> 0)    Then
+    Gmonth_a[1] = 28
+  Else
+      Gmonth_a[1] = 29
+  End If
+
+
+  Gyear_ = Gyear - 1
+  Temp1 = Gyear_ Mod 4
+  Temp2 = Gyear_ Mod 100
+  Temp3 = Gyear_ Mod 400
+  Temp4 = Temp1 And Temp2
+  If (Temp4 <> 0) Or (Temp3 = 0) Then
+      Isleapyearp =0
+  Else
+      Isleapyearp=1
+  End If
+  Temp1 = Gmonth - 1
+  For Iloop = 1 To Temp1
+      Gdayofyear = Gmonth_a[iloop-1] + Gdayofyear
+  Next   Iloop
+      Gdayofyear = Gday + Gdayofyear
+  If Gdayofyear > 79 Then
+                Temp1 = Gdayofyear - 79
+                Jyear = Gyear - 621
+                If Temp1 < 186 Then
+                   Temp2 = Temp1 Mod 31
+                   Temp3 = Temp1 / 31
+                   If Temp2 = 0 Then
+                      Jmonth = Temp3
+                      Jday = 31
+                   Else
+                       Jmonth = Temp3 + 1
+                       Jday = Temp2
+                   End If
+                Else
+                    Temp2 = Temp1 - 186
+                    Temp3 = Temp2 Mod 30
+                    Temp4 = Temp2 / 30
+                    If Temp3 = 0 Then
+                       Jmonth = Temp4 + 6
+                       Jday = 30
+                    Else
+                        Jmonth = Temp4 + 7
+                        Jday = Temp3
+                    End If
+                End If
+   Else
+       Jyear = Gyear - 622
+       If Isleapyearp  Then
+          Gdayofyear = Gdayofyear + 11
+       Else
+          Gdayofyear = Gdayofyear + 10
+       End If
+       Temp2 = Gdayofyear Mod 30
+       Temp3 = Gdayofyear / 30
+       If Temp2 = 0 Then
+          Jmonth = Temp3 + 9
+          Jday = 30
+       Else
+           Jmonth = Temp3 + 10
+           Jday = Temp2
+       End If
+       Delay_ms(1)
+  End If
+
+end sub
+sub procedure miladi_call(dim jjmonth,jjday,jjyear,jweek,jhours ,jminutes,jseconds as integer)
+
+'  Lcd_Init()                        ' Initialize Lcd
+  Lcd_0()
+  shamsi_to_milady( jjmonth, jjday, jJyear )
+  select case jweek
+     case 2
+      txt = "Sun"
+     case 3
+      txt = "Mon"
+     case 4
+      txt = "Tue"
+     case 5
+      txt = "Wed"
+     case 6
+      txt = "Thu"
+     case 7
+      txt = "Fri"
+     case 1
+      txt = "Sat"
+  end select
+
+  LCD_Out(1,1, txt)
+  Lcd_Chr(1, 6, (miladiDate_iDay div 10)   + 48)    ' Print tens digit of day variable
+  Lcd_Chr(1, 7, (miladiDate_iDay mod 10)   + 48)    ' Print oness digit of day variable
+  Lcd_Chr(1, 9, (miladiDate_iMonth div 10) + 48)
+  Lcd_Chr(1,10, (miladiDate_iMonth mod 10) + 48)
+  Lcd_Chr(1,12, (miladiDate_iYear div 1000)  + 48)
+  Lcd_Chr(1,13, ((miladiDate_iYear mod 1000)div 100)  + 48)
+  Lcd_Chr(1,14, (((miladiDate_iYear mod 1000)mod 100) div 10)  + 48)
+  Lcd_Chr(1,15, (((miladiDate_iYear mod 1000)mod 100) mod 10)  + 48)
+
+  Lcd_Chr(2, 6, (jhours div 10)   + 48)
+  Lcd_Chr(2, 7, (jhours mod 10)   + 48)
+  Lcd_Chr(2, 9, (jminutes div 10) + 48)
+  Lcd_Chr(2,10, (jminutes mod 10) + 48)
+  Lcd_Chr(2,12, (jseconds div 10) + 48)
+  Lcd_Chr(2,13, (jseconds mod 10) + 48)
+
+  Delay_mS(1000)
+end sub
+'**************************************************************************************************
+'* Call Shamsi
+'**************************************************************************************************}
+  sub procedure Shamsi_call()
+'      Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+
+     Shamsi_transfer_time()
+
+      Gyear =  Year+2000
+      Gday = Day
+      Gmonth = Month
+'
+     shamsi()
+
+'     Day = Jday
+'     Year2 = Jyear
+'     Jyear=jyear -1300
+'     Month = Jmonth
+     Lcd_Cmd(_LCD_CLEAR)               ' Prepare and output static text on LCD
+'     ByteToStr(Year2, txt)
+'     IntToStr(Jyear, txt)
+'     Display_Time()
+     ''Shamsi_show_lcd( jmonth,jday,jyear,week,hours ,minutes,seconds )
+
+   ''Delay_mS(1000)
+
+   ''miladi_call(jmonth,jday,jyear,week,hours ,minutes,seconds )
+  end sub
+
+end.

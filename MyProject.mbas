@@ -1,0 +1,409 @@
+program MyProject
+
+include "libs/PWM_timers"
+include "libs/LCD"
+include "libs/I2C"
+include "libs/EEprom"
+include "libs/TWI"
+include "libs/Calculations"
+include "libs/milady_shamsi"
+include "libs/keypad"
+include "libs/main_function"
+
+
+' Declarations section
+ dim hours, minutes, seconds, day, week, month, year as byte    ' Global date/time variables
+    Interupt_first_time,Interupt_first_time2, on_test as byte
+dim var_in_global as Byte
+'module MyProject
+dim txt_inin as string[6]
+dim kp1, ok1 ,K_set_max as byte
+dim kp,ok,k_set,week_new,chanel,Pwm_Percent,Pwm_chanel,Pwm_chanel_main ,Yes_no,on_off,on_off2 as  byte
+'dim on_off as  byte
+'dim v as string[4]
+dim year_new as byte
+dim while_state_blinking,while_satat as bit
+dim oldstate,oldstate_up,oldstate_down,oldstate_ok,oldstate_ww,while_state,while_satate_in_1 as bit
+dim oldstate_4,oldstate_3,while_state_import,oldstate_2,while_state_import_main,while_state_import_main2 as bit
+dim while_state_2,oldstate_menu as bit
+dim chanel_active as  byte
+'
+' Relay arraye
+'structure On_arrayx
+dim on_a_0 as Byte[7][4][7][2][4]  ''[week-1][chanel-1][pwm_chanel-1][on_off2-1][0]
+dim on_a_1 as Byte[7][4][7][2][4]  ''[week-1][chanel-1][pwm_chanel-1][on_off2-1][0]
+'dim on_a_1 as integer[7][4][7][2][4]  ''[week-1][chanel-1][pwm_chanel-1][on_off2-1][0]
+'dim on_a_0 as byte[7][1][3][2][4]  '' on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off22-1][0]
+ dim st as string[4]
+ dim output as integer
+'dim on_a as byte[7][5][7][4]
+'    Week as byte[7][5]
+'    Hour as byte[7][5]
+'    minut as byte[7][5]
+'end structure
+'structure off_arrayx
+'dim off_a as byte[7][5][2]
+'    Week as byte[7][5]
+'    Hour as byte[7][5]
+'    minut as byte[7][5]
+'end structure
+
+' Lcd constants
+dim txt11,txt22 as string [2]
+    txt33,txt_ch as string[1]
+     txt_pwm1,txt_pwm2,txt_pwm3,txt_pwm4,txt_pwm5,txt_Pwm6,txt_pwm7,txt_pwm8,txt_pwm9 as string [3]
+dim txt,txt3 ,txt1 as string[19]
+
+    txt2 as string[16]
+'    txt3 as string[5]
+'    txt4 as string[5]
+    text_1  as string[16]
+  ' RTC Definitions
+
+
+
+
+dim stringLength,temp,numberLength,j,ex , i as integer
+      tempCh as char
+'''################# LCD Initial #################
+'
+'sub procedure Lcd_0()
+'              Lcd_Init()
+'              Lcd_Cmd(_LCD_CLEAR)               ' Clear display
+'              Lcd_Cmd(_LCD_CURSOR_OFF)          ' Cursor off
+'
+'end sub
+
+sub procedure interrupt_ISR () org IVT_ADDR_INT2            ''// Interrupt rutine
+'dim while_satate_in_1 as bit
+
+  if Interupt_first_time=0 then
+     Interupt_first_time=1
+
+     Lcd_0()
+     Lcd_Out(1,1,"Interupt_first_time=0")
+     Delay_mS(1000)
+  else
+  SREG_I_bit = 0                                   '' // Disable Interrupts
+
+   WDT_on()
+'  INTF2_bit=0                                                  '  // Clear interrupt flag
+  INT2_bit = 0
+  ' ## ############## Because of Disappering the Pwm Part we need to run this comands #########################
+ while_state_import_main=0
+Keypad_set__date_time_import_On_hour_teben(week,hours,minutes,23,0)
+Keypad_set__date_time_import_On_minut_teben(week,on_a_0[week-1][chanel-1][Pwm_chanel-1][on_off2-1][1],minutes,59,0)
+Keypad_set__date_time_import_Yes_No_teben( week,chanel,1, 2,1 )
+Keypad_set__date_time_import_PWM_Red_teben(1,1,on_a_0[week_new-1][chanel-1][Pwm_chanel-1][on_off2-1][3],100,0,on_a_0[week_new-1][0][Pwm_chanel-1][on_off2-1][3],on_a_0[week_new-1][1][Pwm_chanel-1][on_off2-1][3],on_a_0[week_new-1][2][Pwm_chanel-1][on_off2-1][3],on_a_0[week_new-1][3][Pwm_chanel-1][on_off2-1][3],0,0,0,0,0)''on_a_0[week_new-1][4][Pwm_chanel-1][on_off2-1][3],0,0,0,0) ''on_a_0[week_new-1][5][Pwm_chanel-1][on_off2-1][3],on_a_0[week_new-1][6][Pwm_chanel-1][on_off2-1][3],0,0) ''on_a_0[week_new-1][7][Pwm_chanel-1][on_off2-1][3],on_a_0[week_new-1][8][Pwm_chanel-1][on_off2-1][3]) ''(dim mode_1,Pwm_chanel,var_in as byte, dim p_max as  byte, dim p_min as  byte )
+Keypad_set__date_time_import_save_exit_teben (week,1,1,0)
+while_state_import_main=1
+
+ ' ## ############## Because of Disappering the Pwm Part  we need to run this comands #########################
+
+  Keypad_3()
+   txt1 = "<int is selected"
+       Lcd_Out(1,1,txt1)
+if (Button(PIND, 2, 0.1, 1)<> 0) then    ' Detect logical one setting key
+      oldstate = 1
+      Lcd_0()
+      'txt1 = "<Exit is selected>"
+       'Lcd_Out(1,1,txt1)
+      Delay_mS(400)                      ' Update flag
+   end if
+    if (oldstate and Button(PIND, 2, 0.1, 0)) then    ' Detect one-to-zero transition
+       oldstate = 0
+       txt1 = "<good>"
+       Lcd_Out(1,1,txt1)
+           Delay_mS(400)
+     end if
+  '/* Turn off WDT */
+
+  WDTCR = 0x00
+  INT2_bit = 1
+'  LCD_Out(1,1, "?nd of keypad3")   Delay_mS(1000)
+  SREG_I_bit = 1                                  ''  // Enable Interrupts
+'   Lcd_0()
+'    LCD_Out(1,1, "?nd of interuppt")
+'        inttostr(on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][0],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(1,11, txt)
+'            inttostr(week,txt)
+'            LCD_Out(2,11, txt)
+'            Delay_mS(1000)
+ end if
+end sub
+
+sub procedure interrupt_ISR_6 () org IVT_ADDR_INT6            ''// Interrupt rutine
+'dim while_satate_in_1 as bit
+
+  if Interupt_first_time2=0 then
+     Interupt_first_time2=1
+
+     Lcd_0()
+     Lcd_Out(1,1,"Interupt_first_time=0")
+     Delay_mS(1000)
+  else
+        SREG_I_bit = 0                                   '' // Disable Interrupts
+
+         WDT_on()
+      '  INTF2_bit=0                                                  '  // Clear interrupt flag
+        INT6_bit = 0
+        ' ## ############## Because of Disappering the Pwm Part we need to run this comands #########################
+      ' while_state_import_main=0
+      'Keypad_set__date_time_import_On_hour_teben(week,hours,minutes,23,0)
+      'Keypad_set__date_time_import_On_minut_teben(week,on_a_0[week-1][chanel-1][Pwm_chanel-1][on_off2-1][1],minutes,59,0)
+      'Keypad_set__date_time_import_Yes_No_teben( week,chanel,1, 2,1 )
+      'Keypad_set__date_time_import_PWM_Red_teben(1,1,on_a_0[week_new-1][chanel-1][Pwm_chanel-1][on_off2-1][3],100,0,on_a_0[week_new-1][0][Pwm_chanel-1][on_off2-1][3],on_a_0[week_new-1][1][Pwm_chanel-1][on_off2-1][3],on_a_0[week_new-1][2][Pwm_chanel-1][on_off2-1][3],on_a_0[week_new-1][3][Pwm_chanel-1][on_off2-1][3],0,0,0,0,0)''on_a_0[week_new-1][4][Pwm_chanel-1][on_off2-1][3],0,0,0,0) ''on_a_0[week_new-1][5][Pwm_chanel-1][on_off2-1][3],on_a_0[week_new-1][6][Pwm_chanel-1][on_off2-1][3],0,0) ''on_a_0[week_new-1][7][Pwm_chanel-1][on_off2-1][3],on_a_0[week_new-1][8][Pwm_chanel-1][on_off2-1][3]) ''(dim mode_1,Pwm_chanel,var_in as byte, dim p_max as  byte, dim p_min as  byte )
+      'Keypad_set__date_time_import_save_exit_teben (week,1,1,0)
+      'while_state_import_main=1
+       ' ## ############## Because of Disappering the Pwm Part  we need to run this comands #########################
+
+        Easy_vacuum_95_10_4_simple(chanel,1)
+
+        Lcd_Out(1,1,txt1)
+
+        '/* Turn off WDT */
+
+        WDTCR = 0x00
+        INT6_bit = 1   ''simulating pressed  INT6 button by 1 in this bit
+
+        SREG_I_bit = 1                                  ''  // Enable Interrupts
+  end if
+
+end sub
+
+
+sub procedure interrupt_ISR_0 () org IVT_ADDR_INT0            ''// Interrupt rutine
+'dim while_satate_in_1 as bit
+
+  SREG_I_bit = 0                                   '' // Disable Interrupts
+    LCD_Out(2,1, "INT0")
+    Delay_mS(1000)
+   WDT_on()
+  INTF0_bit=0                                                  '  // Clear interrupt flag
+  INT0_bit = 0
+  Keypad_3()
+  '/* Turn off WDT */
+
+  WDTCR = 0x00
+  INT0_bit = 1
+'  LCD_Out(1,1, "nd of keypad3")   Delay_mS(1000)
+  SREG_I_bit = 1                                  ''  // Enable Interrupts
+'   Lcd_0()
+'    LCD_Out(1,1, "nd of interuppt")
+'        inttostr(on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][0],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(1,11, txt)
+'            inttostr(week,txt)
+'            LCD_Out(2,11, txt)
+'            Delay_mS(1000)
+end sub
+
+
+
+main:
+'
+#IFDEF ATmega128
+  DDB0_bit = 1                                       ' set Button pin as input
+  DDA2_bit = 1                                        ' set Button pin as input
+  DDA5_bit = 1                                        ' set Button pin as input
+  DDA4_bit = 1                                        ' set Button pin as input
+  DDA3_bit = 1                                        ' set Button pin as input
+  DDC2_bit =1   DDC3_bit =1
+  DDC4_bit =1   DDC5_bit =1  ' configure PORTD as output
+  DDC6_bit =1
+  DDC7_bit =1
+  ''################switches Ports #############
+  'DDD0_bit =0  DDD1_bit =0
+   DDD2_bit =0 DDD3_bit =0   DDD4_bit =0  ' configure PORTD as output
+  DDD5_bit =0 DDD6_bit =0     DDD7_bit =0
+  DDE6_bit = 0                    ' Set PORTE pin 7 as input pin for the Heater switches
+  ''################ End of switches Ports #############
+
+  DDB1_bit =1      DDB3_bit =1
+  DDA0_bit =1 DDA1_bit =1      DDA2_bit =1  DDA3_bit =1
+'  PORTC = 0xAA                                        ' initial PORTC value
+' PWM_Initialize ()
+
+ ''################PWM Ports #############
+   DDB4_bit = 1                    ' Set PORTB pin 3 as output pin for the PWM (according to datasheet)
+   DDB5_bit = 1                    ' Set PORTB pin 3 as output pin for the PWM (according to datasheet)
+   DDB6_bit = 1                    ' Set PORTB pin 3 as output pin for the PWM (according to datasheet)
+   DDB7_bit = 1                    ' Set PORTB pin 3 as output pin for the PWM (according to datasheet)
+   DDE3_bit = 1                    ' Set PORTD pin 7 as output pin for the PWM1 (according to datasheet)
+   DDE4_bit = 1                    ' Set PORTD pin 7 as output pin for the PWM1 (according to datasheet)
+   DDE5_bit = 1                    ' Set PORTD pin 7 as output pin for the PWM1 (according to datasheet)
+
+
+      ''################timer test part #############
+
+#ENDIF
+'
+'#IFDEF ATmega32
+' ''################LCD Ports #############
+'  DDC2_bit =1   DDC3_bit =1
+'  DDC4_bit =1   DDC5_bit =1  ' configure PORTD as output
+'  DDC6_bit =1   DDC7_bit =1
+'
+'   ''################LCD Ports #############
+'  ''################switches Ports #############
+'  DDB4_bit = 0 DDB2_bit = 0                  ' Set PORTE pin 7 as input pin for the Heater switches
+'  DDD2_bit = 0 DDD3_bit = 0   DDD5_bit = 0  DDD6_bit = 0
+'  ''################ End of switches Ports #############
+'
+' ''################PWM Ports #############
+'   DDB3_bit = 1                    ' Set PORTB pin 3 as output pin for the PWM (according to datasheet)
+'   DDD7_bit = 1                    ' Set PORTB pin 3 as output pin for the PWM (according to datasheet)
+'   DDD4_bit = 1                    ' Set PORTB pin 3 as output pin for the PWM (according to datasheet)
+'  ''################timer test part #############
+'
+'#ENDIF
+''################ Port Initilization #############
+    Lcd_Port_Init()
+    Key_Port_Init()
+    PWM_Port_Initialize ()
+''################ Port Initilization #############
+LCD_Init() ' Initialize LCD
+LCD_cmd(_LCD_CLEAR) ' Clear LCD
+LCD_cmd(_LCD_CURSOR_OFF)
+LCD_Out(2,1,"TEST")
+ hours=0x0  minutes=0x0   seconds=0x00 day= 0x2 week=2   month=0x11  year=0x15
+'   a = 17
+'   year = Dec2Bcd(a) ' b equals 34
+  Write_Time(hours, minutes, seconds, 0x13, 0x02,   0x11,year)'
+'Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+'Shamsi_call()
+'  Shamsi_show_lcd( jmonth,jday,jyear,week,hours ,minutes,seconds )
+
+
+ while_state_import=1
+    oldstate_2=0
+
+    chanel=1  Pwm_chanel=1  on_off2=1   week_new=week    chanel_active=1
+
+' ## ############## Because of Disappering the on and off counter we need to run this comands #########################
+'  on_off_initial (1,1,0,0,18)    '' on mode on_off initial (dim on_off22,en,hr,mint,prc as integer)
+' on_off_initial (2,1,0,0,18)    '''off mode
+
+
+' ## ############## Because of Disappering the Pwm Part  we need to run this comands #########################
+'on_a_0[week_new-1][chanel-1][Pwm_chanel-1][on_off2-1][3]=var_in_global
+'Bytetostr(on_a_0 [week-1][chanel-1][Pwm_chanel-1][on_off2-1][0],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'LCD_Out(1,11, txt)         delay_ms(2000)
+'PWM_MAKE (on_a_0[week_new-1][chanel-1][pwm_chanel-1][on_off2-1][3],255,pwm_chanel)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+'delay_ms(2000)
+'Keypad_set__date_time_import_Yes_No_teben( week,chanel,1, 2,1 )
+' Keypad_set__date_time_import_PWM_Red_teben(1,1,1,10,0,0,0,0,0,0,0,0,0,0) ''(dim mode_1,Pwm_chanel,var_in as byte, dim p_max as  byte, dim p_min as  byte )
+
+'
+' Keypad_set__date_time_import_On_hour_teben(week,hours,minutes,23,0)
+' on_a_0[week-1][chanel-1][Pwm_chanel-1][on_off2-1][1]=var_in_global
+' Keypad_set__date_time_import_On_minut_teben(week,on_a_0[week-1][chanel-1][Pwm_chanel-1][on_off2-1][1],minutes,59,0)
+' on_a_0[week-1][chanel-1][Pwm_chanel-1][on_off2-1][2]=var_in_global
+' LCD_Out(1,1, "More On&Off Mode?")
+' LCD_Out(2,1, "yes   or  No")
+' LCD_Out(2,1, "      or  No")
+'Delay_ms(100)
+'  if var_in=1 then
+' wend
+
+
+
+'Delay_ms(1100)
+'ddrb.PINb0_bit=0
+'
+'ddrb.PINf0_bit=1
+'ddrb.PINf1_bit=1
+''ddrb.PINb0_bit=0
+'portf0_bit=0
+'portf1_bit=0
+'SetRegister()
+'
+'if _ss=125 then '"Z?hltor": Abarbeitung jede 0,5 Sekunde (8MHz/1024/125/125)
+'portf1_bit=not portf1_bit
+'_count=TCNT0
+'_ss=0
+'ztmp=_zz
+'_zz=0
+'LCD_init()
+'freq = 0.5+((256 * ztmp + _count)*korrekturfaktor)
+'''/*********************************************************************************
+'''- freq: Ermittlung der Frequenz: Anzahl Timer 0 Overflows + aktuellen Timer 0 Count
+'''- die + 0,5 sind zum korrektem "Runden" ->Flie?kommazahl zu Ganzzahl
+'''- "korrekturfaktor" ist die SW-Korrektur zur Kompensation der lin.Quarzungenauigkeit
+'''**********************************************************************************/
+'longwordToStr(freq,anz)
+'LCD_Out(1,1,anz + " Hz") ' Write string
+'end if
+'Delay_ms(500)
+''############################end of timer test ################
+''############################ Displaying custom character in lcd ''############################
+     Lcd_0()
+     LCD_Load()
+     CustomChar(1,1)
+     LCD_Chr(1,5,3)
+     LCD_Chr(2,2,0)    ' Display custom char 0 (heart)
+     LCD_Chr(2,4,4)    ' Display custom char B
+     Delay_ms(1500)
+'    ###################### Start of EEPROM   #########################'
+   on_off_initial (1,1,0,20,18)    '' off mode on_off initial (dim on_off22,en,hr,mint,prc as integer)
+   on_off_initial (2,1,0,0,18)    '''on mode
+'   int_eeprom_ini()   ''internal AVR EEPROM Writing   77777777777777777777777777777777777
+'   ext_eeprom_ini()
+
+'
+'         ext_twi_eeprom_ini()   ''EXternal TWI EEPROM
+
+'    ###################### End of EEPROM   #########################
+
+  Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+  Shamsi_call()
+  Shamsi_show_lcd( jmonth,jday,jyear,week,hours ,minutes,seconds )
+
+'  Delay_mS(500)
+  miladi_call(jmonth,jday,jyear,week,hours ,minutes,seconds )
+'   Delay_ms(500)
+'   on_off_initial (1,1,0,1,12)    '' off mode on_off initial (dim on_off22,en,hr,mint,prc as integer)
+'   on_off_initial (2,1,0,0,12)    '''on mode
+  ' ##########   Interupt enalbleing   ##########
+  ' ISC00_bit = 1                                    '' // Set interrupts to be detected on rising edge
+'   ISC00_bit = 1
+   'SREG_I_bit = 0
+'    Delay_ms(500)                                  ''  // Enable Interrupts
+ '  SREG_I_bit = 1
+
+ '  INT0_bit = 1
+
+
+     '  PWM_Initialize ()
+     PWM_Initialize ()
+     '  SetPWM0(0)
+
+     ' ##########   Interupt 2 enalbleing   ##########
+    Interupt_first_time=0 Interupt_first_time2=0
+    ISC20_Bit = 1                                    '' // Set interrupts to be detected on rising edge
+    ISC00_bit = 1
+    INTF2_bit = 0
+    SREG_I_bit = 0
+    Delay_ms(100)                                  ''  // Enable Interrupts
+
+
+    INT2_bit =1
+    INT6_bit =1
+    SREG_I_bit = 1
+'#########################################
+
+'#########################################
+
+  chanel=1
+  Lcd_0()
+  while TRUE
+
+
+        Lcd_Out(1,1,"main ")
+'        radeon_github_10_95()
+
+'         Easy_vacuum_95_10_4(chanel)
+'        Easy_vacuum_95_10_4_simple(chanel,0)
+
+  wend
+
+end.

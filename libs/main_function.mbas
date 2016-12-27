@@ -1,0 +1,742 @@
+module main_function
+
+
+include "libs/PWM_timers"
+include "libs/LCD"
+include "libs/I2C"
+include "libs/EEprom"
+include "libs/TWI"
+include "libs/Calculations"
+include "libs/milady_shamsi"
+include "libs/keypad"
+
+#IFDEF ATmega128
+  symbol  HET_SW_Port  = PINE
+  symbol HET_SW_bit =   6
+  symbol Mot_SW_Port = PIND
+  symbol Mot_SW_bit=   7
+  symbol Ok_SW_Port  = PINE
+  symbol Ok_SW_bit =   6
+  symbol Menu_SW_Port  = PINE
+  symbol Menu_SW_bit =   6
+  symbol Up_SW_Port  = PINE
+  symbol UP_SW_bit =   6
+  symbol Down_SW_Port  = PINE
+  symbol Down_SW_bit =   6
+#ENDIF
+
+#IFDEF ATmega32
+  symbol HET_SW_Port  = PINB
+  symbol HET_SW_bit =   2
+  symbol Mot_SW_Port = PINB
+  symbol Mot_SW_bit=   4
+
+  symbol Ok_SW_Port  = PIND
+  symbol Ok_SW_bit =   6
+  symbol Menu_SW_Port  = PIND
+  symbol Menu_SW_bit =   2
+  symbol Up_SW_Port  = PIND
+  symbol UP_SW_bit =   5
+  symbol Down_SW_Port  =PIND
+  symbol Down_SW_bit =   4
+#ENDIF
+
+ dim hours, minutes, seconds, day, week, month, year as byte  external  ' Global date/time variables
+ dim kp,ok,k_set,week_new,chanel,Pwm_Percent,Pwm_chanel,Pwm_chanel_main ,Yes_no,on_off,on_off2 as  byte  external
+ dim  Interupt_first_time, on_test as byte external
+ dim on_a_0 as Byte[7][4][7][2][4]  external ''[week-1][chanel-1][pwm_chanel-1][on_off2-1][0]
+dim on_a_1 as Byte[7][4][7][2][4] external  ''[week-1][chanel-1][pwm_chanel-1][on_off2-1][0]
+'dim on_a_1 as integer[7][4][7][2][4]  external ''[week-1][chanel-1][pwm_chanel-1][on_off2-1][0]
+'dim on_a_0 as byte[7][1][3][2][4]   external'' on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off22-1][0]
+ dim chanel_active as  byte   external
+ dim txt,txt3 ,txt1 as string[19]  external
+  dim while_state_import,oldstate_2,while_state_import_main ,oldstate_3 as bit   external
+ dim ht_start_min, ht_start_sec ,ht_end_sec,ht_end_min,Mo_start_min,Mo_start_sec ,Mo_end_sec,Mo_end_min as byte
+  dim Start_hours, Start_minutes, Start_seconds, Start_day, Start_week, Start_month, Start_year as byte    ' Global date/time variables
+  dim  Start_minutes_next, Start_seconds_next,End_minutes_next, End_seconds_next as byte    ' Global date/time variables
+sub procedure radeon_github_10_95()
+sub procedure Easy_vacuum_95_10_4(dim program_number as byte)
+sub procedure Easy_vacuum_95_10_4_simple(dim program_number as byte,dim Interupt_en as byte)
+
+implements
+sub procedure radeon_github_10_95()
+
+
+
+
+'  week=2
+     Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+     Shamsi_call()
+     Shamsi_show_lcd( jmonth,jday,jyear,week,hours ,minutes,seconds )
+     Delay_mS(500)
+     miladi_call(jmonth,jday,jyear,week,hours ,minutes,seconds )
+     Delay_mS(500)
+'     Lcd_0()
+'  Lcd_Out(1,1,"r")
+'       Pwm_chanel=1   chanel=1        on_off2=1
+'       if  (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][0]>= 1 ) then
+'        Lcd_Out(1,1,"okkkkk")
+'         PWM_MAKE (on_a_0[week-1][chanel-1][pwm_chanel-1][on_off2][3],255,pwm_chanel)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+
+'          inttostr(on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][0],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(1,11, txt)
+'           inttostr(on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][3],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(2,11, txt)
+'           inttostr(week,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(2,1, txt)
+'          else
+'          Lcd_Out(1,1,"no   kkkk")
+'          PWM_MAKE (on_a_0[week-1][chanel-1][pwm_chanel-1][on_off2][0],255,pwm_chanel)
+'          inttostr(on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][0],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(1,11, txt)
+'           inttostr(on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][3],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(2,11, txt)
+'           inttostr(week,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(2,1, txt)
+'        end if
+'        Delay_mS(500)
+'       counter
+
+'     for week =2to 2
+
+     for Pwm_chanel_main=1 to 7
+      on_test=0
+       for chanel =1 to 4
+       for on_off2 =1 to 1
+'          WDT_on()
+
+'       on_test=on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][0]
+'       if  (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][1]>= hours ) and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) and    (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][2]>= minutes)  then
+       if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]>= hours ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]>= minutes)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then  '''OFF mode
+'
+'         if    (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][2]>= minutes) then '' and (on_a_0[week-1][chanel-1][pwm_chanel-1][0]=1)then
+'          #####################  check On is accured and enabled  #############
+          if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][1]<= hours ) and     (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][2]<= minutes)  then
+
+           on_test=1
+           chanel_active=chanel
+           inttostr(chanel_active,txt)
+           Lcd_0()
+           Lcd_Out(1,1,"CHANEL IS ACTIVE:")
+           Lcd_Out(2,1,"main CH:") Lcd_Out(2,8,txt) delay_ms(50)
+'           Lcd_0()
+'           Lcd_Out(1,1,"on pwm mode")
+'           inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           PWM_MAKE (on_a_0[week-1][chanel-1][pwm_chanel-1][on_off2-1][3],255,pwm_chanel)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+'
+'           LCD_Out(1,13, txt)
+'           inttostr(on_off,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(2,1, txt)
+'           inttostr(pwm_chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(2,4, txt)
+'           Delay_mS(500)
+           end if
+      else
+      if (on_test=0) then
+'        Lcd_0()
+        Lcd_Chr(2, 6, (hours div 10)   + 48)
+        Lcd_Chr(2, 7, (hours mod 10)   + 48)  Delay_mS(1000)
+'        inttostr(on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][0],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+'           LCD_Out(1,11, txt)
+'            inttostr(Pwm_chanel,txt)
+'            LCD_Out(2,11, txt)
+'           Lcd_Out(1,1,"offfff")
+'           Delay_mS(500)
+'           PWM_MAKE (0,255,pwm_chanel)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+'            Delay_mS(500)
+      end if
+      end if
+'      Delay_mS(1000)
+
+      next on_off2
+       next chanel
+
+       chanel=Pwm_chanel_main
+       inttostr(chanel,txt)
+       Lcd_Out(1,1,"CHANEL IS ACTIVE:")
+       Lcd_Out(2,1,"CH:") Lcd_Out(2,4,txt) delay_ms(50)
+       if   (on_test=1) then
+       Lcd_0()
+           Lcd_Out(1,1,"on pwm mode")
+           bytetostr(chanel,txt)
+                              ' ??? ????? ???? ? ?????? ????? ? ????
+           PWM_MAKE (on_a_0[week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][3],255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+
+           LCD_Out(1,13, txt)
+
+           bytetostr(Pwm_chanel_main,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+           LCD_Out(2,3, txt)
+           bytetostr(on_off,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+           LCD_Out(2,1, txt)
+           Delay_mS(500)
+'            PWM_MAKE (on_a_0[week-1][chanel-1][pwm_chanel-1][on_off2-1][3],255,pwm_chanel)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+       else
+        Lcd_0()
+'        Lcd_Chr(2, 6, (hours div 10)   + 48)
+'        Lcd_Chr(2, 7, (hours mod 10)   + 48)
+            bytetostr(on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][0],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+            LCD_Out(1,11, txt)
+            bytetostr(Pwm_chanel_main,txt)
+            LCD_Out(2,11, txt)
+           Lcd_Out(1,1,"offfff")
+           Delay_mS(500)
+           PWM_MAKE (0,255,Pwm_chanel_main)
+       end if
+      next Pwm_chanel_main
+'      next week
+
+
+
+
+  end sub                                                ' endless loop
+
+sub procedure Easy_vacuum_95_10_4(dim program_number as byte)
+
+
+
+
+'  week=2
+     Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+     Shamsi_call()
+     Shamsi_show_lcd( jmonth,jday,jyear,week,hours ,minutes,seconds )
+     Delay_mS(500)
+     miladi_call(jmonth,jday,jyear,week,hours ,minutes,seconds )
+     Delay_mS(500)
+
+'     for week =2to 2
+
+     for Pwm_chanel_main=1 to 1  ' equal to heater
+      on_test=0
+
+      for chanel =1 to 1   ' equal to Programs number  changed from days number
+'       chanel=program_number
+       for on_off2 =1 to 1   ' equal to on or off estate
+'          WDT_on()
+
+       if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]>= minutes ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]>= seconds)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then  '''OFF mode
+'
+'          #####################  check On is accured and enabled  #############
+          if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][1]<= minutes ) and     (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][2]<= seconds)  then
+
+'           on_test=1
+           chanel_active=chanel
+           inttostr(chanel_active,txt)
+           Lcd_0()
+           Lcd_Out(1,1,"Program S ACTIVE:")
+           Lcd_Out(2,1,"main CH:") Lcd_Out(2,8,txt) delay_ms(200)
+'           Lcd_0()
+           Lcd_Out(1,1,"on pwm heater mode")
+           inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+           PWM_MAKE (on_a_0[week-1][chanel-1][pwm_chanel-1][on_off2-1][3],255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+'
+           end if
+      else
+      if (on_test=0) then
+'        Lcd_0()
+        Lcd_Chr(2, 6, (hours div 10)   + 48)
+        Lcd_Chr(2, 7, (hours mod 10)   + 48)  Delay_mS(1000)
+'
+      end if
+      end if
+'
+
+      next on_off2
+       next chanel
+'
+'       chanel=Pwm_chanel_main
+       inttostr(chanel,txt)
+
+       if   (on_test=1) then
+           Lcd_0()
+           Lcd_Out(1,1,"test CHANEL IS ACTIVE:")
+           Lcd_Out(2,1,"CH:") Lcd_Out(2,4,txt) delay_ms(100)
+           Lcd_Out(1,1,"on pwm heater mode")
+           bytetostr(chanel,txt)
+                              ' ??? ????? ???? ? ?????? ????? ? ????
+           PWM_MAKE (on_a_0[week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][3],255,Pwm_chanel_main)   ''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+
+           LCD_Out(1,13, txt)
+
+           bytetostr(Pwm_chanel_main,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+           LCD_Out(2,3, txt)
+           bytetostr(on_off,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+           LCD_Out(2,1, txt)
+           Delay_mS(500)
+'            PWM_MAKE (on_a_0[week-1][chanel-1][pwm_chanel-1][on_off2-1][3],255,pwm_chanel)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+       else
+            Lcd_0()
+
+            Lcd_Out(2,1,"CH:") Lcd_Out(2,4,txt) delay_ms(100)
+            bytetostr(on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][0],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+            LCD_Out(1,11, txt)
+            bytetostr(Pwm_chanel_main,txt)
+            LCD_Out(2,7, "          ")
+            LCD_Out(2,11, txt)
+           Lcd_Out(1,1,"offfff")
+           Delay_mS(500)
+           PWM_MAKE (10,255,Pwm_chanel_main)
+       end if
+      next Pwm_chanel_main
+'      next week
+      Lcd_Out(1,1,"heater ended")
+      delay_ms(100)
+     for Pwm_chanel_main=2 to 2  ' equal to motor
+      on_test=0
+
+      for chanel =1 to 1   ' equal to Programs number  changed from days number
+'       chanel=program_number
+       for on_off2 =1 to 1   ' equal to on or off estate
+'          WDT_on()
+
+       if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]>= minutes ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]>= seconds)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then  '''OFF mode
+'
+'          #####################  check On is accured and enabled  #############
+          if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][1]<= minutes ) and     (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][2]<= seconds)  then
+
+           on_test=1
+           chanel_active=chanel
+           inttostr(chanel_active,txt)
+           Lcd_0()
+           Lcd_Out(1,1,"Program S ACTIVE:")
+           Lcd_Out(2,1,"main CH:") Lcd_Out(2,8,txt) delay_ms(200)
+'           Lcd_0()
+           Lcd_Out(1,1,"on pwm  motor mode")
+           inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+           PWM_MAKE (on_a_0[week-1][chanel-1][pwm_chanel-1][on_off2-1][3],255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+'
+          end if
+      else
+      if (on_test=0) then
+'        Lcd_0()
+        Lcd_Chr(2, 6, (hours div 10)   + 48)
+        Lcd_Chr(2, 7, (hours mod 10)   + 48)  Delay_mS(300)
+     end if
+      end if
+'      Delay_mS(1000)
+
+      next on_off2
+       next chanel
+'
+'       chanel=Pwm_chanel_main
+       inttostr(chanel,txt)
+       Lcd_Out(1,1,"test CHANEL IS ACTIVE:")
+       Lcd_Out(2,1,"CH:") Lcd_Out(2,4,txt) delay_ms(200)
+       if   (on_test=1) then
+       Lcd_0()
+           Lcd_Out(1,1,"on pwm motor mode") delay_ms(200)
+           bytetostr(chanel,txt)
+                              ' ??? ????? ???? ? ?????? ????? ? ????
+           PWM_MAKE (on_a_0[week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][3],255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+
+           LCD_Out(1,13, txt)
+
+           bytetostr(Pwm_chanel_main,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+           LCD_Out(2,3, txt)
+           bytetostr(on_off,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+           LCD_Out(2,1, txt)
+           Delay_mS(500)
+       else
+        Lcd_0()
+           bytetostr(on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][0],txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+            LCD_Out(1,11, txt)
+            bytetostr(Pwm_chanel_main,txt)
+            LCD_Out(2,11, txt)LCD_Out(2,7, "          ")
+           Lcd_Out(1,1,"offfff")
+           Delay_mS(500)
+           PWM_MAKE (50,255,Pwm_chanel_main)
+       end if
+      next Pwm_chanel_main
+'      next week
+
+
+  end sub                                                ' endless loop
+
+sub procedure Easy_vacuum_95_10_4_simple_main(dim program_number as byte,dim Heater_0_Motor_1 as byte)
+        Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+
+        week=1
+        chanel=program_number
+        Pwm_chanel_main=Heater_0_Motor_1 ''heater
+       if  (Pwm_chanel_main=0) then
+            txt="Heater"
+            ht_start_min= minutes   ht_start_sec=seconds
+       else if  (Pwm_chanel_main=1) then
+           txt="Heater"
+           Mo_start_min= minutes   Mo_start_sec=seconds
+           end if
+       end if
+       
+'       Min_start=on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1] +minutes
+'       Sec_start=on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2] +seconds
+
+'       ht_start_min, ht_start_sec ,ht_end_sec,ht_end_min,Mo_start_min,Mo_start_sec ,Mo_end_sec,Mo_end_min
+
+       while_state_import=1
+       while( while_state_import)
+         for on_off2 =1 to 1   ' equal to on or off estate
+
+           if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]>= minutes ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]>= seconds)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then  '''OFF mode
+    '          #####################  check On is accured and enabled  #############
+              if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][1]<= minutes ) and     (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][2]<= seconds)  then
+                 chanel_active=chanel
+                 Lcd_0()
+                 Lcd_Out(1,1,txt) Lcd_Out(1,8,"is ACTIVE:")
+                 inttostr(chanel_active,txt)
+                 Lcd_Out(2,1,"Prog num:") Lcd_Out(2,10,txt) delay_ms(200)
+                 Lcd_Out(1,1,"On pwm heater mode")
+                 inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+                 PWM_MAKE (on_a_0[week-1][chanel-1][pwm_chanel-1][on_off2-1][3],255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+      '
+
+                else
+                 Lcd_0()
+                 Lcd_Out(1,1,txt) Lcd_Out(1,8,"is Off:")
+                 Lcd_Out(2,1,"Prog num:") Lcd_Out(2,10,txt) delay_ms(200)
+                 Lcd_Out(1,1,"Off pwm heater mode")
+                 inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+                 PWM_MAKE (0,255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+                 while_state_import=0
+                end if
+           else '' if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]>= minutes ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]>= seconds)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then  '''OFF mode
+                Lcd_0()
+                Lcd_Out(1,1,"on setting is ==0")
+           end if
+         next on_off2
+       wend
+
+ end sub
+
+sub procedure Easy_vacuum_95_10_4_simple(dim program_number as byte,dim Interupt_en as byte)
+
+
+
+     
+     Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+     Shamsi_call()
+     Shamsi_show_lcd( jmonth,jday,jyear,week,hours ,minutes,seconds )
+     Delay_mS(300)
+     miladi_call(jmonth,jday,jyear,week,hours ,minutes,seconds )
+     Delay_mS(300)
+     while_state_import=1  oldstate_3=0 chanel=program_number
+     while  (while_state_import )
+       if (Interupt_en=0) then
+         if (Button(HET_SW_Port, HET_SW_bit, 0.5, 0)) then    ' Detect logical one up key
+                    oldstate_3 = 1                      ' Update flag
+         end if
+         if (oldstate_3 and Button(HET_SW_Port, HET_SW_bit,0.5, 1)) then
+           Interupt_en=1 while_state_import=0
+         end if
+       else
+          while_state_import=0
+       end if
+       
+       Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+       Shamsi_call()
+       Shamsi_show_lcd( jmonth,jday,jyear,week,hours ,minutes,seconds )
+       Delay_mS(300)
+       miladi_call(jmonth,jday,jyear,week,hours ,minutes,seconds )
+       Delay_mS(300)
+     
+     wend
+
+
+
+        if (Interupt_en=1) then
+              LCD_Out(2,9, "Heater running")  ''Show on LCD
+              LCD_Out(2,1, "Value: ")  ''Show on LCD
+              Delay_mS(100)
+              Read_Time(@Start_hours, @Start_minutes, @Start_seconds, @Start_day, @Start_week, @Start_month, @Start_year)
+              Write_Time(Dec2Bcd(1),Dec2Bcd(0),Dec2Bcd(0),Dec2Bcd(1),Dec2Bcd(1),Dec2Bcd(1),Dec2Bcd(Start_year))
+              ''Write_Time(dim c_hours as byte, dim c_minutes as byte, dim c_seconds as byte,
+                 ''dim c_day as byte, dim c_week as byte, dim c_month as byte, dim c_year as byte)
+              Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+              week=1
+
+              Pwm_chanel_main=1 ''heater
+             if  (Pwm_chanel_main=1) then
+                  txt="Heater"
+                  ht_start_min= minutes   ht_start_sec=seconds
+             else if  (Pwm_chanel_main=2)  then
+                 txt="Motor"
+                 Mo_start_min= minutes   Mo_start_sec=seconds
+                end if
+             end if
+             
+               on_off2 = 1
+      '       Min_start=on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1] +minutes
+      '       Sec_start=on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2] +seconds
+
+      '       ht_start_min, ht_start_sec ,ht_end_sec,ht_end_min,Mo_start_min,Mo_start_sec ,Mo_end_sec,Mo_end_min
+              Lcd_0() 
+              inttostr(on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][1],txt)
+              inttostr(seconds,txt)
+              Lcd_Out(2,1,txt) Lcd_Out(1,1,"min in a is :") delay_ms(1000)
+'              PWM_MAKE (18,255,2)
+              if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][1]>= minutes ) and (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][2]>= seconds) then ''and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0)  then
+                 ''On test down
+                 if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]<= minutes ) and     (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]<= seconds) then
+                           Lcd_0()
+                           inttostr(on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1],txt)
+                           inttostr(minutes,txt)
+                           Lcd_Out(2,1,txt) Lcd_Out(1,1,"1 chcked:")
+'                           PWM_MAKE (on_a_0[week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][3],255,Pwm_chanel_main)
+                           delay_ms(1000)
+
+              end if end if
+
+
+               for on_off2 =1 to 1   ' equal to on or off estate
+'                 #####################  check On is accured and enabled  #############
+                 if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]<= minutes ) and     (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]<= seconds) and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then
+                     while_state_import=1
+                     while( while_state_import)
+       '                 #####################  check Off is accured and enabled  #############
+                         if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][1]>= minutes ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][2]>= seconds)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][0]<>0) then  '''OFF mode
+              '
+
+                           chanel_active=chanel
+                           Lcd_0()
+                           Lcd_Out(1,1,txt) Lcd_Out(1,8,"is ACTIVE:")
+                           inttostr(chanel_active,txt)
+                           Lcd_Out(2,1,"Prog num:") Lcd_Out(2,10,txt) delay_ms(2000)
+                           Lcd_Out(1,1,"On pwm heater mode")
+                           inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+                           PWM_MAKE (on_a_0[week-1][chanel-1][Pwm_chanel_main-1][on_off2][3],255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+                           Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+
+                          else
+                           Lcd_0()
+                           Lcd_Out(1,1,txt) Lcd_Out(1,8,"is Off:")
+                           Lcd_Out(2,1,"Prog num:") Lcd_Out(2,10,txt) delay_ms(300)
+                           Lcd_Out(1,1,"Off pwm heater mode")
+                           inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+                           PWM_MAKE (0,255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+                           while_state_import=0
+                          end if
+                      wend
+                 else '' if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]>= minutes ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]>= seconds)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then  '''OFF mode
+                      Lcd_0()
+                      Lcd_Out(1,1,"ext form Ht one area")
+'                      PWM_MAKE (0,255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+                      while_state_import=0
+                 end if
+                 next on_off2 
+
+
+              while_state_import=0
+        end if
+
+     
+'     Read_Time(@Start_hours, @Start_minutes_next, @Start_seconds_next, @Start_day, @Start_week, @Start_month, @Start_year)
+     
+      '############# Motor action ###############
+     Pwm_chanel_main=2 ''Motor
+      while_state_import=1  ''while_state_import_main2=1
+       oldstate_3=0
+         while_state_import_main=1
+         Lcd_0() '' DDD7_bit =0
+         while  (while_state_import_main )
+
+             if (Button(Mot_SW_Port,Mot_SW_bit, 0.5, 0)) then    ' Detect logical one up key
+                        oldstate_3 = 1                      ' Update flag
+             end if
+             if (oldstate_3 and Button(Mot_SW_Port,Mot_SW_bit,0.5, 1)) then
+                while_state_import_main=0
+             end if
+              Lcd_Out(1,1,"Wating for :") Lcd_Out(2,1,"Pressing Motor micro SW") delay_ms(200)
+         wend
+        if (1) then
+              LCD_Out(2,9, "motor running")  ''Show on LCD
+              LCD_Out(2,1, "Value: ")  ''Show on LCD
+              Delay_mS(100)
+              Read_Time(@Start_hours, @Start_minutes_next, @Start_seconds_next, @Start_day, @Start_week, @Start_month, @Start_year)
+              Write_Time(Dec2Bcd(1),Dec2Bcd(0),Dec2Bcd(0),Dec2Bcd(1),Dec2Bcd(1),Dec2Bcd(1),Dec2Bcd(Start_year))
+              ''Write_Time(dim c_hours as byte, dim c_minutes as byte, dim c_seconds as byte,
+                 ''dim c_day as byte, dim c_week as byte, dim c_month as byte, dim c_year as byte)
+              week=1
+              chanel=program_number
+
+             if  (Pwm_chanel_main=1) then
+                  txt="Heater"
+                  ht_start_min= minutes   ht_start_sec=seconds
+             else if  (Pwm_chanel_main=2)  then
+                 txt="Motor"
+                 Mo_start_min= minutes   Mo_start_sec=seconds
+                end if
+             end if
+
+
+      '       Min_start=on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1] +minutes
+      '       Sec_start=on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2] +seconds
+
+      '       ht_start_min, ht_start_sec ,ht_end_sec,ht_end_min,Mo_start_min,Mo_start_sec ,Mo_end_sec,Mo_end_min
+
+             while_state_import=1
+             Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+             for on_off2 =1 to 1   ' equal to on or off estate
+'                 #####################  check On is accured and enabled  #############
+                 if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]<= minutes ) and     (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]<= seconds) and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then
+                     while_state_import=1
+                     while( while_state_import)
+           '                 #####################  check Off is accured and enabled  #############
+                             if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][1]>= minutes ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][2]>= seconds)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2-1][0]<>0) then  '''OFF mode
+                  '        chanel_active=chanel
+                           Lcd_0()
+                           Lcd_Out(1,1,txt) Lcd_Out(1,8,"is ACTIVE:")
+                           inttostr(chanel_active,txt)
+                           Lcd_Out(2,1,"Prog num:") Lcd_Out(2,10,txt) delay_ms(200)
+                           Lcd_Out(1,1,"On pwm heater mode")
+                           inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+                           PWM_MAKE (on_a_0[week-1][chanel-1][Pwm_chanel_main-1][on_off2][3],255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+                           Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+
+                          else
+                           Lcd_0()
+                           Lcd_Out(1,1,txt) Lcd_Out(1,8,"is Off:")
+                           Lcd_Out(2,1,"Prog num:") Lcd_Out(2,10,txt) delay_ms(200)
+                           Lcd_Out(1,1,"Off pwm heater mode")
+                           inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+                           PWM_MAKE (0,255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+                           while_state_import=0
+                          end if
+                      wend
+                 else '' if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]>= minutes ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]>= seconds)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then  '''OFF mode
+                      Lcd_0()
+                      Lcd_Out(1,1,"out of off Mt area") 
+                      while_state_import=0
+                 end if
+             next on_off2
+                 Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+
+              while_state_import=0
+        end if
+
+     ''############## End and making back tier setting
+     Read_Time(@Start_hours, @End_minutes_next, @End_seconds_next, @Start_day, @Start_week, @Start_month, @Start_year)
+     Write_Time(Dec2Bcd(Start_hours),Dec2Bcd(Start_minutes+End_minutes_next),Dec2Bcd(Start_seconds+End_seconds_next),
+               Dec2Bcd(Start_day),Dec2Bcd(Start_week),Dec2Bcd(Start_month),Dec2Bcd(Start_year))
+               
+     Lcd_0()
+     inttostr(End_seconds_next,txt)
+     Lcd_Out(1,1,"Sec ended is :") Lcd_Out(1,10,txt)
+     inttostr(End_minutes_next,txt)
+     Lcd_Out(2,1,"Min ended is :") Lcd_Out(2,10,txt) delay_ms(200)
+ end sub
+
+sub procedure Easy_vacuum_95_10_4_simple_1(dim program_number as byte,dim Heater_0_Motor_1 as byte)
+     Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+
+        chanel=1
+'        Pwm_chanel_main=Heater_0_Motor_1 ''heater
+        Pwm_chanel_main=1 ''heater port INT0
+       'if  (Pwm_chanel_main==0) then
+'            txt="Heater"
+'       else if  (Pwm_chanel_main==0)
+'           txt="Motor"
+'       end if
+
+'       Min_start=on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1] +minutes
+'       Sec_start=on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2] +seconds
+       txt="Heater"
+       while_state_import=1
+       while( while_state_import)
+         for on_off2 =1 to 1   ' equal to on or off estate
+
+           if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]>= minutes ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]>= seconds)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then  '''OFF mode
+    '          #####################  check On is accured and enabled  #############
+              if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][1]<= minutes ) and     (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][2]<= seconds)  then
+               chanel_active=chanel
+               Lcd_0()
+               Lcd_Out(1,1,txt) Lcd_Out(1,8,"is ACTIVE:")
+               inttostr(chanel_active,txt)
+               Lcd_Out(2,1,"Prog num:") Lcd_Out(2,10,txt) delay_ms(200)
+               Lcd_Out(1,1,"On pwm heater mode")
+               inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+               PWM_MAKE (on_a_0[week-1][chanel-1][pwm_chanel-1][on_off2-1][3],255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+    '
+               end if
+            else
+               while_state_import=0
+               Lcd_0()
+               Lcd_Out(1,1,txt) Lcd_Out(1,8,"is Off:")
+               Lcd_Out(2,1,"Prog num:") Lcd_Out(2,10,txt) delay_ms(200)
+               Lcd_Out(1,1,"Off pwm heater mode")
+               inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+               PWM_MAKE (0,255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+             end if
+         next on_off2
+       wend
+
+      while_state_import=1 Pwm_chanel_main=2 txt="Motor"
+      while( while_state_import)
+       for on_off2 =1 to 1   ' equal to on or off estate
+
+         if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][1]>= minutes ) and    (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2][2]>= seconds)  and (on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off2][0]<>0) then  '''OFF mode
+  '          #####################  check On is accured and enabled  #############
+            if  (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][1]<= minutes ) and     (on_a_0 [week-1][chanel-1][Pwm_chanel_main-1][on_off2-1][2]<= seconds)  then
+            chanel_active=chanel
+             Lcd_0()
+             Lcd_Out(1,1,txt) Lcd_Out(1,8,"is ACTIVE:")
+             inttostr(chanel_active,txt)
+             Lcd_Out(2,1,"Prog num:") Lcd_Out(2,10,txt) delay_ms(200)
+             Lcd_Out(1,1,"On pwm heater mode")
+             inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+             PWM_MAKE (on_a_0[week-1][chanel-1][pwm_chanel-1][on_off2-1][3],255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+  '
+             end if
+          else
+             while_state_import=0
+             Lcd_0()
+             Lcd_Out(1,1,txt) Lcd_Out(1,8,"is Off:")
+             Lcd_Out(2,1,"Prog num:") Lcd_Out(2,10,txt) delay_ms(200)
+             Lcd_Out(1,1,"Off pwm heater mode")
+             inttostr(chanel,txt)                     ' ??? ????? ???? ? ?????? ????? ? ????
+             PWM_MAKE (0,255,Pwm_chanel_main)''(dim jj as byte,dim max_duty,Pwm_chanel as integer)
+          end if
+         next on_off2
+      wend
+ end sub
+
+sub procedure Easy_vacuum_95_10_4_key_actions(dim prog_number as byte)',dim heater_switch as byte,dim Motor_switch as byte)
+     Read_Time(@hours, @minutes, @seconds, @day, @week, @month, @year)
+     Shamsi_call()
+     Shamsi_show_lcd( jmonth,jday,jyear,week,hours ,minutes,seconds )
+     Delay_mS(300)
+     miladi_call(jmonth,jday,jyear,week,hours ,minutes,seconds )
+     Delay_mS(300)
+     while_state_import=1  oldstate_3=0
+     while  (while_state_import )
+        if (Button(PORTD, 0, 0.5, 0)) then    ' Detect logical one up key
+                oldstate_3 = 1                      ' Update flag
+        end if
+        if (oldstate_3 and Button(PIND, 0,0.5, 1)) then
+              LCD_Out(2,9, "Heater running")  ''Show on LCD
+              LCD_Out(2,1, "Value: ")  ''Show on LCD
+              Delay_mS(100)
+              Read_Time(@Start_hours, @Start_minutes, @Start_seconds, @Start_day, @Start_week, @Start_month, @Start_year)
+              Write_Time(Dec2Bcd(1),Dec2Bcd(0),Dec2Bcd(0),Dec2Bcd(1),Dec2Bcd(1),Dec2Bcd(1),Dec2Bcd(Start_year))
+              ''Write_Time(dim c_hours as byte, dim c_minutes as byte, dim c_seconds as byte,
+                 ''dim c_day as byte, dim c_week as byte, dim c_month as byte, dim c_year as byte)
+              Easy_vacuum_95_10_4_simple(prog_number,1)
+              while_state_import=0
+        end if
+     wend
+    
+    while_state_import=1  oldstate_3=0
+    while  (while_state_import )
+      if (Button(PORTD,1, 0.5, 0)) then    ' Detect logical one up key
+              oldstate_3 = 1                      ' Update flag
+      end if
+      if (oldstate_3 and Button(PIND,1,0.5, 1)) then
+            LCD_Out(2,9, "Motor running")  ''Show on LCD
+            LCD_Out(2,1, "Value: ")  ''Show on LCD
+            Delay_mS(100)
+            Easy_vacuum_95_10_4_simple(prog_number,1)
+            while_state_import=0
+      end if
+    wend
+    Write_Time(Dec2Bcd(Start_hours),Dec2Bcd(Start_minutes),Dec2Bcd(Start_seconds),
+               Dec2Bcd(Start_day),Dec2Bcd(Start_week),Dec2Bcd(Start_month),Dec2Bcd(Start_year))
+            ''Write_Time(dim c_hours as byte, dim c_minutes as byte, dim c_seconds as byte,
+end sub 
+end.

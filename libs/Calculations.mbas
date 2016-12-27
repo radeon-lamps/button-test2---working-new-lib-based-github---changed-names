@@ -1,0 +1,45 @@
+module Calculations
+'dim output as integer  external
+' dim st as string[4]    external
+dim stringLength,temp,numberLength,j,ex , i as integer external
+      tempCh as char external
+  dim output as integer   external
+   dim st as string[4]   external
+'sub Function  strToInt1( dim byref  st1 as string[4]) as integer
+sub procedure strToInt1()
+implements
+
+sub procedure strToInt1()
+'  dim stringLength,temp,numberLength,j,ex , i as integer
+'      tempCh as char
+      output = 0  ex=0
+      i = 1  stringLength = strlen(st)  temp = 0   numberLength = 0
+
+  for j = 0 to stringLength-1
+'   inc(j)
+   tempCh = st[j]
+   temp = tempCh - 48
+   if   tempCh =46 then
+      ex=1
+   end if
+       if (temp >= 0) and ( temp <= 9) and (ex=0)  then
+
+                 inc(numberLength)
+       end if
+   next j
+
+
+   for j = 0 to numberLength-1
+'     inc(j)
+     tempCh = st[j]
+     temp = tempCh - 48
+     if (temp >= 0) and (temp <= 9)  then
+
+        output =output +  temp * pow(10, (numberLength-i))
+        i=i+1
+
+     end if
+   next j
+
+end sub
+end.

@@ -1,0 +1,201 @@
+module TWI
+
+include "libs/LCD"  ' Include both used modules
+ dim txt,txt3 ,txt1 as string[19]    external
+ dim hours, minutes, seconds, day, week, month, year as byte   external   ' Global date/time variables
+ dim kp,ok,k_set,week_new,chanel,Pwm_Percent,Pwm_chanel,Pwm_chanel_main ,Yes_no,on_off,on_off2 as  byte   external
+ Dim write_address_bus as integer external ' or 0XA0
+Dim read_address_bus as integer  external' or 0XA0
+
+ dim counter as integer
+    counter_ex as integer
+
+Dim EEprom_data_read As byte external
+dim on_a_0 as Byte[7][4][7][2][4]  external ''[week-1][chanel-1][pwm_chanel-1][on_off2-1][0]
+dim on_a_1 as Byte[7][4][7][2][4]  external ''[week-1][chanel-1][pwm_chanel-1][on_off2-1][0]
+'dim on_a_1 as integer[7][4][7][2][4]  external ''[week-1][chanel-1][pwm_chanel-1][on_off2-1][0]
+'dim on_a_0 as byte[7][1][3][2][4]   external'' on_a_0 [week-1][chanel-1][pwm_chanel-1][on_off22-1][0]
+
+'sub procedure Lcd_0()  external
+
+sub procedure eeprom_save_ext_twi()'dim on_a_0 as integer[7][2][7][2][4] )
+'sub Function Read_eeprom_ext_TWI(dim address_ as integer,dim read_address_bus1 as integer,dim write_address_bus1 as integer)   As byte
+  sub procedure Read_eeprom_ext_TWI(dim address_ as integer)
+  
+'sub procedure write_eeprom_ext_TWI(dim address_ as integer,dim  data_ as Byte,dim write_address_bus as integer)
+sub procedure write_eeprom_ext_TWI(dim address_ as integer,dim  data_ as Byte)
+
+sub procedure eeprom_call_back_ext_twi()'dim on_a_0 as integer[7][2][7][2][4] )
+sub procedure eeprom_ext_TWI_ini()
+
+
+implements
+sub procedure write_eeprom_ext_TWI(dim address_ as integer,dim  data_ as Byte)
+
+ TWI_Init(100000)         ' initialize TWI communication
+  TWI_Start()              ' issue TWI start signal
+  TWI_Write(write_address_bus)          ' send byte via TWI (device address + W)
+  TWI_Write(address_)             ' send byte (address of EEPROM location)
+  TWI_Write(data_)          ' send data (data to be written)
+  TWI_Stop()               ' issue TWI stop signal
+
+  Delay_ms(15)
+end sub
+
+
+  '**************************************************************************************************
+
+ sub procedure Read_eeprom_ext_TWI(dim address_ as integer)
+
+ TWI_Init(100000)         ' initialize TWI communication
+  TWI_Start()              ' issue TWI start signal
+  TWI_Write(write_address_bus)          ' send byte via TWI (device address + W)
+  TWI_Write(address_)             ' send byte (data address)
+  TWI_Start()              ' issue TWI signal repeated start
+  TWI_Write(read_address_bus)          ' send byte (device address + R)
+  EEprom_data_read = TWI_Read(0)      ' read data (NO acknowledge)
+'  IntToStr(EEprom_data_read, txt)
+'  Lcd_0()
+'  Lcd_Out(1,1,"EEprom TWI o " )
+'  Lcd_Out(2,1,txt )
+'  delay_ms(1500)
+  TWI_Stop()
+  Delay_ms(15)
+end sub
+
+sub procedure eeprom_call_back_ext_twi()'dim on_a_0 as integer[7][2][7][2][4] )
+dim on_off22_twi as byte
+    week_twi as byte
+    Pwm_chanel_ini,chanel_ini as byte
+'    counter as word
+'    hx1 as string[2]
+'    txt_sub as string[4]
+'      Lcd_0()
+     counter=5
+     for week_twi =1 to 7
+     for Pwm_chanel_ini=1 to 7
+     for chanel_ini =1 to 4
+     for on_off22_twi=1 to 2
+'     counter=counter+1
+'          LongWordToStr(counter, txt)
+'          Lcd_Out(1,1,"read counter: " )
+'          Lcd_Out(2,7,txt )
+'          delay_ms(4)
+'         EEprom_data_read=99
+         Read_eeprom_ext_TWI(inc(counter))
+         on_a_0 [week_twi-1][chanel_ini-1][Pwm_chanel_ini-1][on_off22_twi-1][0]=  EEprom_data_read
+'         EEprom_data_read=99
+          Read_eeprom_ext_TWI(inc(counter))
+         on_a_0 [week_twi-1][chanel_ini-1][Pwm_chanel_ini-1][on_off22_twi-1][1]=  EEprom_data_read
+'         EEprom_data_read=99
+          Read_eeprom_ext_TWI(inc(counter))
+         on_a_0 [week_twi-1][chanel_ini-1][Pwm_chanel_ini-1][on_off22_twi-1][2]=  EEprom_data_read
+'         EEprom_data_read=99
+          Read_eeprom_ext_TWI(inc(counter))
+         on_a_0 [week_twi-1][chanel_ini-1][Pwm_chanel_ini-1][on_off22_twi-1][3]=  EEprom_data_read
+
+         Lcd_0() byteToStr(EEprom_data_read, txt)
+          Lcd_Out(1,1,"date read is: " )
+          Lcd_Out(2,1,txt )
+'          Delay_mS(500)
+
+          intToStr(integer (ceil((counter*100)/1573)), txt)
+          Lcd_Out(1,1,"read counter: " )
+          Lcd_Chr (2,5,137) Lcd_Out(2,7,txt )
+
+'          counter=counter+4
+'      Delay_mS(1000)
+       next on_off22_twi
+     next chanel_ini
+      next Pwm_chanel_ini
+      next week_twi
+'  EEPROM_Write(0x100 ,  hours) EEPROM_Write(0x101 , minutes) EEPROM_Write(0x102 ,  seconds)
+'  EEPROM_Write(0x103 ,  day) EEPROM_Write(0x104 ,  week) EEPROM_Write(0x105 ,  month) EEPROM_Write(0x106 ,  year )
+'  dim hours, minutes, seconds, day, week, month, year as byte
+
+ end sub
+
+sub procedure eeprom_save_ext_twi()'dim on_a_0 as integer[7][2][7][2][4] )
+dim on_off22_twi as byte
+    week_twi as byte
+    counter as integer
+    Pwm_chanel_ini,chanel_ini as byte
+'    hx1 as string[2]
+'    txt_sub as string[4]
+'    Lcd_0()
+     counter=5
+     for week_twi =1 to 7
+     for Pwm_chanel_ini=1 to 7
+     for chanel_ini =1 to 4
+     for on_off22_twi=1 to 2
+'     counter=counter+1
+
+         write_eeprom_ext_TWI(inc(counter),on_a_0 [week_twi-1][chanel_ini-1][Pwm_chanel_ini-1][on_off22_twi-1][0] )
+
+'         Read_eeprom_ext_TWI(counter)
+'         Lcd_0() byteToStr(EEprom_data_read, txt)
+'          Lcd_Out(1,1,"on_a_0 date writen is: " )
+'          Lcd_Out(2,1,txt )
+'          Delay_mS(500)
+
+         write_eeprom_ext_TWI(inc(counter),on_a_0 [week_twi-1][chanel_ini-1][Pwm_chanel_ini-1][on_off22_twi-1][1] )
+         write_eeprom_ext_TWI(inc(counter),on_a_0 [week_twi-1][chanel_ini-1][Pwm_chanel_ini-1][on_off22_twi-1][2] )
+         write_eeprom_ext_TWI(inc(counter),on_a_0 [week_twi-1][chanel_ini-1][Pwm_chanel_ini-1][on_off22_twi-1][3] )
+
+         Read_eeprom_ext_TWI(counter)
+         Lcd_0() byteToStr(EEprom_data_read, txt)
+          Lcd_Out(1,1,"EEprom_data_read writen is: " )
+          Lcd_Out(2,1,txt )
+'          Delay_mS(500)
+
+
+          intToStr(integer (ceil(counter*100/1573)), txt)
+          Lcd_Out(1,1,"Write counter: " )
+          Lcd_Out(2,7,txt )
+'          delay_ms(4)
+
+       next on_off22_twi
+     next chanel_ini
+      next Pwm_chanel_ini
+      next week_twi
+'  EEPROM_Write(0x100 ,  hours) EEPROM_Write(0x101 , minutes) EEPROM_Write(0x102 ,  seconds)
+'  EEPROM_Write(0x103 ,  day) EEPROM_Write(0x104 ,  week) EEPROM_Write(0x105 ,  month) EEPROM_Write(0x106 ,  year )
+'  dim hours, minutes, seconds, day, week, month, year as byte
+     delay_ms(111)
+ end sub
+
+'**************************************************************************************************
+
+sub procedure eeprom_ext_TWI_ini()
+  EEprom_data_read=0  Lcd_0()
+  Read_eeprom_ext_TWI(0x00)
+   if  EEprom_data_read=111 then
+   lcd_out(1,1,"Ext TWI EEp wr beffor")
+   delay_ms(1000)
+   else
+   write_eeprom_ext_TWI(0x00,111)
+   lcd_out(1,1,"Ext TWI EEp not wrted")
+   lcd_out(2,1,"Wrtting ext twi eep")
+   delay_ms(1000)
+   end if
+   EEprom_data_read=0 Lcd_0()
+  Read_eeprom_ext_TWI(0x00)
+   if  EEprom_data_read=111 then
+   lcd_out(1,1,"Ext TWI EEp working")
+   delay_ms(100)
+   byteToStr(EEprom_data_read, txt)
+   Lcd_0()
+   Lcd_Out(1,1,"EEprom TWI o " )
+   Lcd_Out(2,1,txt )
+   delay_ms(1000)
+   else
+'   write_eeprom_ext_TWI(0x00,111)
+   lcd_out(1,1,"TWI EEp not working")
+'   lcd_out(2,1,"Wrtting ext twi eep")
+   delay_ms(1000)
+   end if
+   Lcd_0()
+end sub
+
+
+end.

@@ -1,0 +1,86 @@
+module I2C
+
+
+const RTC_ADDR = 0xD0
+ #IFDEF ATmega128
+ ' Software I2C connections
+  dim Soft_I2C_Scl_Output    as sbit at PORTC0_bit
+    Soft_I2C_Sda_Output    as sbit at PORTC1_bit
+    Soft_I2C_Scl_Input     as sbit at PINC0_bit
+    Soft_I2C_Sda_Input     as sbit at PINC1_bit
+    Soft_I2C_Scl_Direction as sbit at DDC0_bit
+    Soft_I2C_Sda_Direction as sbit at DDC1_bit
+  ' End Software I2C connections
+#ENDIF
+
+#IFDEF ATmega32
+   ' Software I2C connections
+    dim Soft_I2C_Scl_Output    as sbit at PORTB0_bit
+    Soft_I2C_Sda_Output    as sbit at PORTB1_bit
+    Soft_I2C_Scl_Input     as sbit at PINB0_bit
+    Soft_I2C_Sda_Input     as sbit at PINB1_bit
+    Soft_I2C_Scl_Direction as sbit at DDB0_bit
+    Soft_I2C_Sda_Direction as sbit at DDB1_bit
+    ' End Software I2C connections
+ #ENDIF
+ sub procedure Read_Time(dim p_hours as ^byte, dim p_minutes as ^byte, dim p_seconds as ^byte,
+              dim p_day as ^byte, dim p_week as ^byte, dim p_month as ^byte, dim p_year as ^byte)
+
+sub procedure Write_Time(dim c_hours as byte, dim c_minutes as byte, dim c_seconds as byte,
+               dim c_day as byte, dim c_week as byte, dim c_month as byte, dim c_year as byte)
+implements
+
+
+ '{**************************************************************************************************
+'* Write time to RTC DS1307
+'* input : variables with RTC data
+'**************************************************************************************************}
+sub procedure Write_Time(dim c_hours as byte, dim c_minutes as byte, dim c_seconds as byte,
+               dim c_day as byte, dim c_week as byte, dim c_month as byte, dim c_year as byte)
+   Soft_I2C_Start()                         ' issue start signal
+   Soft_I2C_Write(RTC_ADDR)                 ' address DS1307
+   Soft_I2C_Write(0)                        ' start from word at address (REG0)
+   Soft_I2C_Write(0x80)                     ' write $80 to REG0. (pause counter + 0 sec)   ?? ??????? ????? ????? ?????
+
+   Soft_I2C_Write(c_minutes)                ' write 0 to minutes word to (REG1)
+   Soft_I2C_Write(c_hours)                  ' write 17 to hours word (24-hours mode)(REG2)
+   Soft_I2C_Write(c_week)                   ' write 2 - Monday (REG3)
+   Soft_I2C_Write(c_day)                    ' write 4 to date word (REG4)
+   Soft_I2C_Write(c_month)                  ' write 5 (May) to month word (REG5)
+   Soft_I2C_Write(c_year)                   ' write 01 to year word (REG6)
+   Soft_I2C_Stop()                          ' issue stop signal
+
+   Soft_I2C_Start()                         ' issue start signal
+   Soft_I2C_Write(RTC_ADDR)                 ' address DS1307
+   Soft_I2C_Write(0)                        ' start from word at address 0
+   Soft_I2C_Write(0 and c_seconds)          ' write 0 to REG0 (enable counting + 0 sec)       ???? ??? ? ?????
+   Soft_I2C_Stop()                          ' issue stop signal
+end sub
+ '**************************************************************************************************
+'* Read_time
+'**************************************************************************************************}
+ '-------------------- Formats date and time
+ sub procedure Read_Time(dim p_hours as ^byte, dim p_minutes as ^byte, dim p_seconds as ^byte,
+              dim p_day as ^byte, dim p_week as ^byte, dim p_month as ^byte, dim p_year as ^byte)
+
+  Soft_I2C_Start()                    ' Issue start signal
+  Soft_I2C_Write(RTC_ADDR)            ' Address DS1307, see DS1307 datasheet
+  Soft_I2C_Write(0)                   ' Start from address 0
+  Soft_I2C_Start()                    ' Issue repeated start signal
+  Soft_I2C_Write(RTC_ADDR + 1)        ' Address DS1307 for reading R/W=1
+
+  p_seconds^ = Soft_I2C_Read(1)      ' Read seconds byte
+  p_minutes^ = Soft_I2C_Read(1)      ' Read minutes byte
+  p_hours^ = Soft_I2C_Read(1)        ' Read hours byte
+  p_week^ = Soft_I2C_Read(1)
+  p_day^ = Soft_I2C_Read(1)
+  p_month^ = Soft_I2C_Read(1)
+  p_year^ = Soft_I2C_Read(0)
+
+  Soft_I2C_Stop()   ' Issue stop signal
+end sub
+
+
+
+
+end.
